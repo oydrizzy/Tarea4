@@ -1,0 +1,102 @@
+﻿@page "/Personajes"
+@using Tareaa4.Models  // Corregir el espacio de nombres
+@using Tareaa4.Data  // Corregir el espacio de nombres
+@inject AppDbContext DbContext
+
+<h3>Registrar Personaje</h3>
+
+<EditForm Model="@character" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Nombre:</label>
+        <InputText id="name" class="form-control" @bind-Value="character.Name" />
+        <ValidationMessage For="@(() => character.Name)" />
+    </div>
+
+    <div class="form-group">
+        <label for="nickname">Apodo:</label>
+        <InputText id="nickname" class="form-control" @bind-Value="character.Nickname" />
+        <ValidationMessage For="@(() => character.Nickname)" />
+    </div>
+
+    <div class="form-group">
+        <label for="race">Raza:</label>
+        <InputText id="race" class="form-control" @bind-Value="character.Race" />
+        <ValidationMessage For="@(() => character.Race)" />
+    </div>
+
+    <div class="form-group">
+        <label for="photoUrl">Foto URL:</label>
+        <InputText id="photoUrl" class="form-control" @bind-Value="character.PhotoUrl" />
+        <ValidationMessage For="@(() => character.PhotoUrl)" />
+    </div>
+
+    <div class="form-group">
+        <label for="age">Edad:</label>
+        <InputNumber id="age" class="form-control" @bind-Value="character.Age" />
+        <ValidationMessage For="@(() => character.Age)" />
+    </div>
+
+    <div class="form-group">
+        <label for="power">Poder Característico:</label>
+        <InputText id="power" class="form-control" @bind-Value="character.Power" />
+        <ValidationMessage For="@(() => character.Power)" />
+    </div>
+
+    <div class="form-group">
+        <label for="mediaItemId">Serie/Película/Libro:</label>
+        <InputSelect id="mediaItemId" class="form-control" @bind-Value="character.MediaItemId">
+            <option value="">Selecciona un medio</option>
+            @foreach (var item in mediaItems)
+            {
+                <option value="@item.Id">@item.Name</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => character.MediaItemId)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</EditForm>
+
+@if (isSubmitted)
+{
+    <div class="alert alert-success mt-3">
+        El personaje ha sido registrado exitosamente.
+    </div>
+}
+
+@code {
+    private Character character = new Character();
+    private bool isSubmitted = false;
+    private List<MediaItem> mediaItems = new List<MediaItem>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            mediaItems = await DbContext.MediaItems.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            // Manejo de errores para evitar problemas al cargar la lista de medios
+            Console.WriteLine($"Error al cargar los medios: {ex.Message}");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            DbContext.Characters.Add(character);
+            await DbContext.SaveChangesAsync();
+            isSubmitted = true;
+        }
+        catch (Exception ex)
+        {
+            // Manejar el error si no se puede guardar el personaje
+            Console.WriteLine($"Error al guardar el personaje: {ex.Message}");
+        }
+    }
+}
